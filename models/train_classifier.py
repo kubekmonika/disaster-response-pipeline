@@ -105,6 +105,7 @@ def build_model(x_train, Y_train):
     cv = GridSearchCV(pipeline, parameters, cv=5)
 
     print('Searching for best params...')
+
     with parallel_backend('multiprocessing', n_jobs=4):
         cv.fit(x_train, Y_train)
 
@@ -112,6 +113,7 @@ def build_model(x_train, Y_train):
     print(cv.best_params_)
 
     print('Training model...')
+
     with parallel_backend('multiprocessing', n_jobs=5):
         model = GridSearchCV(pipeline, best_params, cv=10)
         model.fit(x_train, Y_train)
