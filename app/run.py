@@ -1,75 +1,99 @@
+import sys
+import joblib
+import re
 import json
+import sqlite3
 import plotly
 import pandas as pd
 
+import nltk
+from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
 from flask import Flask
 from flask import render_template, request, jsonify
-from plotly.graph_objs import Bar
-from sklearn.externals import joblib
-from sqlalchemy import create_engine
+import plotly.graph_objs as gobj
+
+from collections import defaultdict
 
 
 app = Flask(__name__)
 
+
+def get_pos_refs():
+    """
+    Pos tags reference.
+
+    Sources: 
+    https://stackoverflow.com/posts/57686805/revisions
+    https://www.nltk.org/_modules/nltk/tag/mapping.html
+    """
+    pos_refs = defaultdict(lambda: 'n')  # noun is set as default
+    pos_refs['VERB'] = 'v'  # verb
+    pos_refs['ADJ'] = 'a'  # adjective
+    pos_refs['ADV'] = 'r'  # adverb
+
+    return pos_refs
+
+
 def tokenize(text):
-    tokens = word_tokenize(text)
+    """
+    Clear and tokenize text data.
+    """
+    stop_words = stopwords.words("english")
     lemmatizer = WordNetLemmatizer()
 
-    clean_tokens = []
-    for tok in tokens:
-        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-        clean_tokens.append(clean_tok)
+    url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    detected_urls = re.findall(url_regex, text)
+    for url in detected_urls:
+        text = text.replace(url, "")
 
-    return clean_tokens
+    # normalize case and remove punctuation
+    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
 
-# load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+    # remove numbers
+    text = re.sub(r"\d+", " ", text.lower())
 
-# load model
-model = joblib.load("../models/your_model_name.pkl")
+    # tokenize
+    tokens = [word for word in word_tokenize(text) if word not in stop_words]
+
+    # get pos tags for the tokens
+    tokens_pos = nltk.pos_tag(tokens, tagset='universal')
+
+    # lemmatize
+    tokens = [lemmatizer.lemmatize(word, pos=pos_refs[pos]) for word, pos in tokens_pos]
+
+    return tokens
 
 
 # index webpage displays cool visuals and receives user input text for model
 @app.route('/')
 @app.route('/index')
 def index():
-    
-    # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
+
+    # data for visualization
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
-    
-    # create visuals
-    # TODO: Below is an example - modify to create your own visuals
-    graphs = [
-        {
-            'data': [
-                Bar(
-                    x=genre_names,
-                    y=genre_counts
-                )
-            ],
 
-            'layout': {
-                'title': 'Distribution of Message Genres',
-                'yaxis': {
-                    'title': "Count"
-                },
-                'xaxis': {
-                    'title': "Genre"
-                }
-            }
-        }
-    ]
-    
+    # create a graph
+    graphs = []
+
+    data = gobj.Scatter(
+        x=genre_names,
+        y=genre_counts
+    )
+    layout = {
+        'title': 'Distribution of Message Genres',
+        'yaxis': {'title': "Count"},
+        'xaxis': {'title': "Genre"}
+    }
+    graphs.append(dict(data=data, layout=layout))
+
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
     graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
-    
+
     # render web page with plotly graphs
     return render_template('master.html', ids=ids, graphJSON=graphJSON)
 
@@ -93,6 +117,23 @@ def go():
 
 
 def main():
+    database_filepath, model_filepath = sys.argv[1:]
+
+    global df
+    global model
+    global pos_refs
+
+    # load data
+    conn = sqlite3.connect(database_filepath)
+    df = pd.read_sql('SELECT * FROM data', conn)
+
+    # load model
+    model = joblib.load(model_filepath)
+
+    # get pos references
+    pos_refs = get_pos_refs()
+
+    # run the app
     app.run(host='0.0.0.0', port=3001, debug=True)
 
 
