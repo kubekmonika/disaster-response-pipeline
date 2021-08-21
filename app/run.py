@@ -72,23 +72,42 @@ def tokenize(text):
 @app.route('/index')
 def index():
 
-    # data for visualization
-    genre_counts = df.groupby('genre').count()['message']
-    genre_names = list(genre_counts.index)
-
-    # create a graph
+    # create graphs
     graphs = []
 
-    data = gobj.Scatter(
+    # 1
+    genre_counts = df.groupby('genre').count()['message']
+    genre_names = list(genre_counts.index)
+    genre_counts = genre_counts.tolist()
+
+    data1 = gobj.Bar(
         x=genre_names,
         y=genre_counts
     )
-    layout = {
+    layout1 = {
         'title': 'Distribution of Message Genres',
         'yaxis': {'title': "Count"},
         'xaxis': {'title': "Genre"}
     }
-    graphs.append(dict(data=data, layout=layout))
+
+    graphs.append(dict(data=data1, layout=layout1))
+
+    # 2
+    df_categories = df.drop(['message', 'original', 'genre'], axis=1).sum().sort_values(ascending=True)
+    categories_data = df_categories.tolist()
+    categories_names = list(df_categories.index.str.replace('_', ' '))
+
+    data2 = gobj.Bar(
+        y=categories_names,
+        x=categories_data,
+        orientation="h"
+    )
+    layout2 = {
+        'title': 'Distribution of Target Categories',
+        'xaxis': {'title': "Count"},
+        'yaxis': {'title': "Categories", 'automargin': True}
+    }
+    graphs.append(dict(data=data2, layout=layout2))
 
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
