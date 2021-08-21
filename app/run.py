@@ -89,6 +89,7 @@ def index():
         'yaxis': {'title': "Count"},
         'xaxis': {'title': "Genre"}
     }
+
     graphs.append(dict(data=data1, layout=layout1))
 
     # 2
