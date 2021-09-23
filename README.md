@@ -20,6 +20,28 @@ The data cleaning pipeline that loads the messages and categories datasets and m
 
 The machine learning pipeline that loads data from the SQLite database and then splits the dataset into training and test sets. Next, it builds a text processing and machine learning pipeline. The former cleans the messaages' text and creates lemmatized tokens for each message and outputs a matrix of token counts with tf–idf term weighting applied. The latter takes that output and trains and tunes a Ridge classifier model using GridSearchCV; then, it outputs summaries on the test set for each of the target categories and exports the final model as a pickle file.
 
+## Project's file structure
+
+```
+- app
+| - template
+| |- master.html  # main page of web app
+| |- go.html  # classification result page of web app
+|- run.py  # Flask file that runs app
+
+- data
+|- disaster_categories.csv  # data to process 
+|- disaster_messages.csv  # data to process
+|- process_data.py  # script that processes the data
+|- InsertDatabaseName.db   # database to save clean data to
+
+- models
+|- train_classifier.py  # script that creates the ML model
+|- classifier.pkl  # saved model 
+
+- README.md
+```
+
 ## Results
 
 The overall score of the model has the following value: 0.14505579068872643.
