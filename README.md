@@ -6,6 +6,8 @@ The goal of this project was to create a data pipeline that consists of the foll
 2. The machine learning script reads data from the database, creates and trains a classifier, and stores the classifier into a pickle file.
 3. The web app renders in the browser. The main page includes some visualizations of data from the SQLite database. When a user inputs a message into the app, the app returns classification resultss.
 
+At the end, we will have a web app that will help various aid organizations classify messagess and quickly find out which one are relevant to them. When a disaster occurs, this will not only save their time, but also help with prioritization.
+
 ## Data
 
 In this project, I analyzed disaster data from Figure Eight (now [appen](https://appen.com/)) to build a model for an API that classifies disaster messages. The data set contains real messages that were sent during disaster events. All messages are categorized so we can apply a supervised machine learning model.
