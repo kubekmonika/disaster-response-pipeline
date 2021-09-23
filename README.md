@@ -6,6 +6,8 @@ The goal of this project was to create a data pipeline that consists of the foll
 2. The machine learning script reads data from the database, creates and trains a classifier, and stores the classifier into a pickle file.
 3. The web app renders in the browser. The main page includes some visualizations of data from the SQLite database. When a user inputs a message into the app, the app returns classification resultss.
 
+At the end, we will have a web app that will help various aid organizations classify messagess and quickly find out which one are relevant to them. When a disaster occurs, this will not only save their time, but also help with prioritization.
+
 ## Data
 
 In this project, I analyzed disaster data from Figure Eight (now [appen](https://appen.com/)) to build a model for an API that classifies disaster messages. The data set contains real messages that were sent during disaster events. All messages are categorized so we can apply a supervised machine learning model.
@@ -19,6 +21,28 @@ The data cleaning pipeline that loads the messages and categories datasets and m
 ### Machine learning part
 
 The machine learning pipeline that loads data from the SQLite database and then splits the dataset into training and test sets. Next, it builds a text processing and machine learning pipeline. The former cleans the messaages' text and creates lemmatized tokens for each message and outputs a matrix of token counts with tf–idf term weighting applied. The latter takes that output and trains and tunes a Ridge classifier model using GridSearchCV; then, it outputs summaries on the test set for each of the target categories and exports the final model as a pickle file.
+
+## Project's file structure
+
+```
+- app
+| - template
+| |- master.html  # main page of web app
+| |- go.html  # classification result page of web app
+|- run.py  # Flask file that runs app
+
+- data
+|- disaster_categories.csv  # data to process 
+|- disaster_messages.csv  # data to process
+|- process_data.py  # script that processes the data
+|- InsertDatabaseName.db   # database to save clean data to
+
+- models
+|- train_classifier.py  # script that creates the ML model
+|- classifier.pkl  # saved model 
+
+- README.md
+```
 
 ## Results
 

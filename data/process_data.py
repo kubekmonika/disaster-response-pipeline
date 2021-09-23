@@ -42,7 +42,7 @@ def save_data(df, database_filename):
     Save the data frame to the database
     """
     conn = sqlite3.connect(database_filename)
-    df.to_sql('data', conn, index=False)
+    df.to_sql('data', conn, index=False, if_exists='replace')
 
 
 def main():
